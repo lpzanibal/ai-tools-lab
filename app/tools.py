@@ -4,9 +4,9 @@ from langchain.vectorstores import Chroma
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings import OpenAIEmbeddings
-from langchain.chains import RetrievalQA
+from langchain.chains import RetrievalQA, SQLDatabaseChain
 from langchain.llms import OpenAI
-
+from langchain.sql_database import SQLDatabase
 
 class DocumentQATool:
 
@@ -38,3 +38,12 @@ class DocumentQATool:
 
     def query(self, query):
         return self.qa_chain.run(query)
+
+class QueryDBTool:
+
+    def __init__(self):
+        db = SQLDatabase.from_uri(os.environ["DB_URI"])
+        self.db_chain = SQLDatabaseChain.from_llm(llm=OpenAI(temperature=0), db=db, verbose=True)
+
+    def query(self, query):
+        return self.db_chain.run(query)

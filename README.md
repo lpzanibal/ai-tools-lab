@@ -10,11 +10,15 @@ git clone https://github.com/lpzanibal/ai-tools-lab.git
 Crear y activar el entorno virtual (opcional)
 ```sh
 python -m venv env
-env\Scripts\activate.bat # windows con cmd
+env\Scripts\activate # windows
 ```
 Instalar dependencias
 ```sh
 pip install -r requirements.txt
+```
+Crear y poblar el vectorstore, utilizando resources/document.pdf y cualquier .pdf en /documents
+```sh
+py setup_vector_db.py
 ```
 Correr el servidor web
 ```sh
@@ -27,5 +31,7 @@ Importante: Los documentos .pdf que se van a cargar en el vectorstore deben ir e
 
 | Ruta                         | Método | Descripción                                               |
 | ---------------------------- | ------ | --------------------------------------------------------- |
-| /qa                          | GET    | UI para interactuar con el documento                      |
-| /tools/qa                    | POST   | Realiza la consulta en el documento                       |
+| /document-qa                 | GET    | UI para interactuar con el documento                      |
+| /query-db                    | GET    | UI para interactuar con la base de datos                  |
+| /tools/document-qa           | POST   | Realiza la consulta en el documento                       |
+| /tools/query-db              | POST   | Realiza la consulta a la base de datos                    |
