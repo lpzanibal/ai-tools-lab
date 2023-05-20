@@ -6,3 +6,7 @@ langchain
 chromadb
 tiktoken
 pypdf
+transformers
+sentence_transformers
+bitsandbytes
+InstructorEmbedding

@@ -1,36 +1,33 @@
-import os
-import re
 from dotenv import load_dotenv, find_dotenv
 from langchain.vectorstores import Chroma
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.document_loaders import PyPDFLoader
-from langchain.embeddings import OpenAIEmbeddings
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.document_loaders import DirectoryLoader, PyPDFLoader
+from langchain.embeddings import OpenAIEmbeddings, HuggingFaceEmbeddings, HuggingFaceInstructEmbeddings
 
 load_dotenv(find_dotenv())
 
-embeddings = OpenAIEmbeddings()
-vectorstore = Chroma(persist_directory="indexes",
-                     embedding_function=embeddings)
+def store_embeddings(texts, embedding_function, path):
+    vectorstore = Chroma.from_documents(
+        texts, embedding_function, persist_directory=path)
+    collection = vectorstore.get()
+    print(
+        f"Ahora hay {len(collection['ids'])} elementos en la VectorDB ({path})")
 
-pdf_files = [file for file in os.listdir('documents/') if re.match(r"^[a-zA-Z0-9_.-]+\.pdf$", file)]
+# Preparar datos
 
-loader = PyPDFLoader("resources/document.pdf")
-pages = [*loader.load_and_split()]
-
-for file in pdf_files:
-    loader = PyPDFLoader("documents/" + file)
-    pages = [*pages, *loader.load_and_split()]
-
-text_splitter = CharacterTextSplitter(
-    separator="\n",
+loader = DirectoryLoader('documents/', glob="./*.pdf", loader_cls=PyPDFLoader)
+documents = loader.load()
+text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1000,
-    chunk_overlap=200,
-    length_function=len,
-)
-docs = text_splitter.split_documents(pages)
-vectorstore.add_documents(
-    documents=docs, embedding=embeddings, persist_directory="indexes"
-)
+    chunk_overlap=200)
+texts = text_splitter.split_documents(documents)
+print(f"Cargando {len(texts)} textos...")
+
+# Crear y almacenar embeddings (HuggingFace, Instruct-base y OpenAI)
+
+# store_embeddings(texts, HuggingFaceEmbeddings(), "indexes/huggingface")
+store_embeddings(texts, HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-base"), "indexes/instruct-base")
+# store_embeddings(texts, OpenAIEmbeddings(), "indexes/openai")
 
 
 # import sqlite3
